@@ -1,7 +1,8 @@
 use std::char::from_u32;
 use std::collections::HashMap;
 
-const JAMO_OFFSET: u32 = 44032; // unicode value of '가'
+const HANGUL_START: u32 = 44032; // unicode value of '가'
+const HANGUL_END: u32 = 55203;
 const NUM_CHO: u32 = 19; // 초성의 개수
 const NUM_JUNG: u32 = 21; // 중성의 개수
 const NUM_JONG: u32 = 28; // 종성의 개수, "없음" 포함
@@ -22,12 +23,27 @@ const JONG_SUNG: [char; NUM_JONG as usize] = [
 ];
 
 /// Def:
+///     return true if the input syllable is in unicode scope of valid Hangul.
+/// Note:
+///     this function is valid only for the modern Korean chars.
+///
+fn is_hangul(syllable: char) -> bool {
+    let syllable_unicode = syllable as u32;
+
+    if syllable_unicode > HANGUL_END || syllable_unicode < HANGUL_START {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/// Def:
 ///     get unicode value given cho, jung, jong index.
 /// Note:
 ///     초성의 인덱스는 588(=중성의 개수*종성의 개수) 글자마다 바뀜.
 fn get_char_from_indices(cho_idx: u32, jung_idx: u32, jong_idx: u32) -> char {
     let res: u32 =
-        ((cho_idx * NUM_JUNG * NUM_JONG) + (jung_idx * NUM_JONG) + jong_idx) + JAMO_OFFSET;
+        ((cho_idx * NUM_JUNG * NUM_JONG) + (jung_idx * NUM_JONG) + jong_idx) + HANGUL_START;
     return from_u32(res).unwrap();
 }
 
@@ -40,10 +56,10 @@ fn get_char_from_indices(cho_idx: u32, jung_idx: u32, jong_idx: u32) -> char {
 fn get_indices_from_syllable(syllable: char) -> (u32, u32, u32) {
     let syllable_uni: u32 = syllable as u32;
 
-    let cho_idx = (syllable_uni - JAMO_OFFSET) / (NUM_JUNG * NUM_JONG);
-    let jung_idx = (syllable_uni - JAMO_OFFSET - (cho_idx * NUM_JUNG * NUM_JONG)) / NUM_JONG;
+    let cho_idx = (syllable_uni - HANGUL_START) / (NUM_JUNG * NUM_JONG);
+    let jung_idx = (syllable_uni - HANGUL_START - (cho_idx * NUM_JUNG * NUM_JONG)) / NUM_JONG;
     let jong_idx =
-        (syllable_uni - JAMO_OFFSET - (cho_idx * NUM_JUNG * NUM_JONG) - (jung_idx * NUM_JONG));
+        (syllable_uni - HANGUL_START - (cho_idx * NUM_JUNG * NUM_JONG) - (jung_idx * NUM_JONG));
 
     return (cho_idx, jung_idx, jong_idx);
 }
@@ -52,6 +68,24 @@ fn get_indices_from_syllable(syllable: char) -> (u32, u32, u32) {
 mod test_korean_strings {
     use super::*;
 
+    #[test]
+    fn test_is_hangul() {
+        // positive case
+        let mut test_char = '헿';
+        assert_eq!(is_hangul(test_char), true);
+
+        // negative case: english
+        test_char = 'z';
+        assert_eq!(is_hangul(test_char), false);
+
+        // negative case: digit
+        test_char = '1';
+        assert_eq!(is_hangul(test_char), false);
+
+        // negative case: special char
+        test_char = '!';
+        assert_eq!(is_hangul(test_char), false);
+    }
     #[test]
     fn test_get_indices_from_unicode() {
         // unicodef for '가', which is "no jong-sung" case.
