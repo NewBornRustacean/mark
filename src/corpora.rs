@@ -43,11 +43,11 @@ pub struct Document {
     sentences: Vec<Sentence>,
 }
 
-pub fn read_corpus_from_file<P: AsRef<Path>>(path: P) -> Result<Document, Box<dyn Error>> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
+// pub fn read_corpus_from_file<P: AsRef<Path>>(path: P) -> Result<Document, Box<dyn Error>> {
+//     let file = File::open(path)?;
+//     let reader = BufReader::new(file);
 
-    let document = serde_json::from_reader(reader)?;
+//     let document = serde_json::from_reader(reader)?;
 
-    Ok(document)
-}
+//     Ok(document)
+// }
