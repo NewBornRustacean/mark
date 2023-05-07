@@ -59,7 +59,7 @@ fn get_indices_from_syllable(syllable: char) -> (u32, u32, u32) {
     let cho_idx = (syllable_uni - HANGUL_START) / (NUM_JUNG * NUM_JONG);
     let jung_idx = (syllable_uni - HANGUL_START - (cho_idx * NUM_JUNG * NUM_JONG)) / NUM_JONG;
     let jong_idx =
-        (syllable_uni - HANGUL_START - (cho_idx * NUM_JUNG * NUM_JONG) - (jung_idx * NUM_JONG));
+        syllable_uni - HANGUL_START - (cho_idx * NUM_JUNG * NUM_JONG) - (jung_idx * NUM_JONG);
 
     return (cho_idx, jung_idx, jong_idx);
 }
