@@ -2,7 +2,7 @@ use std::char::from_u32;
 use std::collections::HashMap;
 
 const JAMO_OFFSET: u32 = 44032; // unicode value of '가'
-const NUM_CHO: u32 = 19;
+const NUM_CHO: u32 = 19; // 초성의 개수
 const NUM_JUNG: u32 = 21; // 중성의 개수
 const NUM_JONG: u32 = 28; // 종성의 개수, "없음" 포함
 
@@ -16,6 +16,7 @@ const JUNG_SUNG: [char; NUM_JUNG as usize] = [
 ];
 
 const JONG_SUNG: [char; NUM_JONG as usize] = [
+    // 종성이 없는 경우 empty literal => JONG_SUNG[0]= '\0'
     '\0', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ',
     'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
 ];
