@@ -2,10 +2,11 @@
 ///
 ///
 mod corpora;
-use corpora::read_corpus_from_file;
+// use corpora::read_corpus_from_file;
+mod hangul;
 
 fn main() {
-    let corpus =
-        read_corpus_from_file("/d/data_corpus_etc/corpus_for_all_ver1.0/SXMP1902008031.json")
-            .unwrap();
+    // let corpus =
+    //     read_corpus_from_file("/d/data_corpus_etc/corpus_for_all_ver1.0/SXMP1902008031.json")
+    //         .unwrap();
 }
