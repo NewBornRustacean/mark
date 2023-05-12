@@ -1,7 +1,4 @@
 use std::char::from_u32;
-use std::collections::HashMap;
-
-use serde::de::Error;
 
 /// 상수 정의: 유니코드 값 계산을 위해 usize type 사용.
 const HANGUL_START: usize = 44032; // unicode value of '가'
