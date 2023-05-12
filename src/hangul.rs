@@ -1,6 +1,8 @@
 use std::char::from_u32;
 use std::collections::HashMap;
 
+use serde::de::Error;
+
 /// 상수 정의: 유니코드 값 계산을 위해 usize type 사용.
 const HANGUL_START: usize = 44032; // unicode value of '가'
 const HANGUL_END: usize = 55203;
@@ -57,6 +59,9 @@ fn get_char_from_indices(cho_idx: usize, jung_idx: usize, jong_idx: usize) -> ch
 ///     중성 = ((음절의 유니코드 - 오프셋) / 종성개수) % 중성개수
 ///     종성 = (음절의 유니코드 - 오프셋) % 종성개수
 fn get_indices_from_syllable(syllable: char) -> (usize, usize, usize) {
+    if is_hangul(syllable) == false {
+        panic!("given syllable is NOT a Hangul.")
+    }
     let syllable_uni = syllable as usize - HANGUL_START;
 
     let cho_idx = syllable_uni / (NUM_VOWEL_CONSONANT * NUM_FINAL_CONSONANT);
@@ -133,5 +138,21 @@ mod test_korean_strings {
             get_char_from_indices(indices.0, indices.1, indices.2),
             test_char
         );
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_get_indices_from_unicode_goes_panic() {
+        // digit case
+        let mut test_char = '1';
+        get_indices_from_syllable(test_char);
+
+        // english case
+        test_char = 'c';
+        get_indices_from_syllable(test_char);
+
+        // special char case
+        test_char = '#';
+        get_indices_from_syllable(test_char);
     }
 }
