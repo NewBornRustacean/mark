@@ -22,6 +22,58 @@ const JONG_SUNG: [char; NUM_FINAL_CONSONANT] = [
     'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
 ];
 
+/// 품사(POS; Part of Speech) 태그 정의
+/// "모두의 말뭉치"에서 정의한 품사 태그를 그대로 사용.
+pub enum PosTag {
+    NNG, //일반명사
+    NNP, //고유명사
+    NNB, //의존명사
+    NP,  //대명사
+    NR,  //수사
+    VV,  //동사
+    VA,  //형용사
+    VX,  //보조용언
+    VCP, //긍정지정사
+    VCN, //부정지정사
+    MMA, //성상 관형사
+    MMD, //지시 관형사
+    MMN, //수 관형사
+    MAG, //일반부사
+    MAJ, //접속부사
+    IC,  //감탄사
+    JKS, //주격조사
+    JKC, //보격조사
+    JKG, //관형격조사
+    JKO, //목적격조사
+    JKB, //부사격조사
+    JKV, //호격조사
+    JKQ, //인용격조사
+    JX,  //보조사
+    JC,  //접속조사
+    EP,  //선어말어미
+    EF,  //종결어미
+    EC,  //연결어미
+    ETN, //명사형전성어미
+    ETM, //관형형전성어미
+    XPN, //체언접두사
+    XSN, //명사파생접미사
+    XSV, //동사파생접미사
+    XSA, //형용사파생접미사
+    XR,  //어근
+    SF,  //마침표, 물음표, 느낌표
+    SP,  //쉼표, 가운뎃점, 콜론, 빗금
+    SS,  //따옴표, 괄호표, 줄표
+    SE,  //줄임표
+    SO,  //붙임표(물결)
+    SW,  //기타 기호
+    SL,  //외국어
+    SH,  //한자
+    SN,  //숫자
+    NA,  //분석불능범주
+    NF,  //명사추정범주
+    NV,  //용언추정범주
+}
+
 /// Def:
 ///     return true if the input syllable is in unicode scope of valid Hangul.
 /// Note:
