@@ -4,6 +4,7 @@
 mod corpora;
 // use corpora::read_corpus_from_file;
 mod hangul;
+mod trie;
 
 fn main() {
     // let corpus =
