@@ -7,10 +7,27 @@ use crate::hangul::{is_hangul, split_syllable, PosTag};
 
 #[derive(Default, Debug)]
 struct TrieNode {
-    character: char,
     is_end: bool,
     children: HashMap<char, TrieNode>,
     tag: Option<PosTag>, // this field has a value if and only if is_end:=True
+}
+
+impl TrieNode {
+    pub fn new(is_end: bool, tag: Option<PosTag>) -> Self {
+        TrieNode {
+            is_end: is_end,
+            children: HashMap::default(),
+            tag: tag,
+        }
+    }
+
+    pub fn default() -> Self {
+        TrieNode {
+            is_end: false,
+            children: HashMap::default(),
+            tag: None,
+        }
+    }
 }
 
 #[derive(Default, Debug)]
@@ -27,18 +44,6 @@ impl Trie {
         }
     }
 
-    fn create_node(&mut self, character: char, is_end: bool) -> TrieNode {
-        let new_node = TrieNode {
-            character: character,
-            is_end: is_end,
-            children: HashMap::default(),
-            tag: None,
-        };
-
-        // self.total += 1;
-        return new_node;
-    }
-
     pub fn insert(&mut self, word: &str, tag: Option<PosTag>) {
         let mut current_node: &mut TrieNode = &mut self.root;
 
@@ -47,57 +52,38 @@ impl Trie {
             match is_hangul(single_char) {
                 true => {
                     // 한글은 초성, 중성, 종성 나눠서 insert
-                    let (_initial_consonant, _mid_vowel, _final_consonant) =
+                    let (initial_consonant, mid_vowel, final_consonant) =
                         split_syllable(single_char);
 
-                    let initial_consonant = &_initial_consonant;
-                    let mid_vowel = &_mid_vowel;
-                    let final_consonant = &_final_consonant;
+                    if !current_node.children.contains_key(&initial_consonant) {
+                        self.total += 1;
+                    }
+                    current_node = current_node.children.entry(initial_consonant).or_default();
 
-                    current_node = current_node
-                        .children
-                        .entry(*initial_consonant)
-                        .or_insert_with(|| self.create_node(*initial_consonant, false));
-
-                    current_node = current_node
-                        .children
-                        .entry(*mid_vowel)
-                        .or_insert_with(|| self.create_node(*mid_vowel, false));
+                    if !current_node.children.contains_key(&mid_vowel) {
+                        self.total += 1;
+                    }
+                    current_node = current_node.children.entry(mid_vowel).or_default();
 
                     if final_consonant.ne(&'\0') {
-                        // 종성은 None이 아닌 경우에만 insert
-                        current_node = current_node
-                            .children
-                            .entry(*final_consonant)
-                            .or_insert_with(|| self.create_node(*final_consonant, false));
+                        if !current_node.children.contains_key(&final_consonant) {
+                            self.total += 1;
+                        }
+                        current_node = current_node.children.entry(final_consonant).or_default();
                     }
                 }
                 false => {
                     // 한글이 아닌 문자는 그냥 insert
                     current_node = current_node.children.entry(single_char).or_default();
+                    self.total += 1;
                 }
             }
         }
-
         current_node.is_end = true;
+
         if tag.is_none() == false {
             current_node.tag = tag;
         }
-    }
-
-    /// this function is for the insert function.
-    /// use "contains" function decripted below to search over trie.
-    fn naive_search(&self, word: &str) -> bool {
-        let mut current_node = &self.root;
-
-        for single_char in word.chars() {
-            match current_node.children.get(&single_char) {
-                Some(node) => current_node = node,
-                None => return false,
-            }
-        }
-
-        current_node.is_end
     }
 
     pub fn contains(&self, word: &str) -> bool {
@@ -117,7 +103,13 @@ mod test_trie {
         trie.insert("역삼", Some(PosTag::NNP));
         assert_eq!(trie.total, 6);
 
-        trie.insert("역", Some(PosTag::NNG));
-        assert_eq!(trie.total, 6);
+        trie.insert("역도", Some(PosTag::NNG));
+        assert_eq!(trie.total, 8);
+
+        trie.insert("역무원", Some(PosTag::NNG));
+        assert_eq!(trie.total, 13);
+
+        trie.insert("역도산", Some(PosTag::NNP));
+        assert_eq!(trie.total, 16);
     }
 }
