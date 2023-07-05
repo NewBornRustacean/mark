@@ -1,18 +1,17 @@
 use std::char::from_u32;
-use std::collections::HashMap;
 
 /// 상수 정의: 유니코드 값 계산을 위해 usize type 사용.
 const HANGUL_START: usize = 44032; // unicode value of '가'
 const HANGUL_END: usize = 55203;
 const NUM_INITIAL_CONSONANT: usize = 19; // 초성의 개수
-const NUM_VOWEL_CONSONANT: usize = 21; // 중성의 개수
+const NUM_MID_VOWEL: usize = 21; // 중성의 개수
 const NUM_FINAL_CONSONANT: usize = 28; // 종성의 개수, "없음" 포함
 
 const CHO_SUNG: [char; NUM_INITIAL_CONSONANT] = [
     'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ',
     'ㅌ', 'ㅍ', 'ㅎ',
 ];
-const JUNG_SUNG: [char; NUM_VOWEL_CONSONANT] = [
+const JUNG_SUNG: [char; NUM_MID_VOWEL] = [
     'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ',
     'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ',
 ];
@@ -23,19 +22,58 @@ const JONG_SUNG: [char; NUM_FINAL_CONSONANT] = [
     'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
 ];
 
-/// Def:
-///     return true if the input syllable is in unicode scope of valid Hangul.
-/// Note:
-///     this function is valid only for the modern Korean chars.
-///
-fn is_hangul(syllable: char) -> bool {
-    let syllable_unicode = syllable as usize;
+/// 품사(POS; Part of Speech) 태그 정의
+/// "모두의 말뭉치"에서 정의한 품사 태그를 그대로 사용.
 
-    if syllable_unicode > HANGUL_END || syllable_unicode < HANGUL_START {
-        return false;
-    } else {
-        return true;
-    }
+#[derive(Debug)]
+pub enum PosTag {
+    NNG, //일반명사
+    NNP, //고유명사
+    NNB, //의존명사
+    NP,  //대명사
+    NR,  //수사
+    VV,  //동사
+    VA,  //형용사
+    VX,  //보조용언
+    VCP, //긍정지정사
+    VCN, //부정지정사
+    MMA, //성상 관형사
+    MMD, //지시 관형사
+    MMN, //수 관형사
+    MAG, //일반부사
+    MAJ, //접속부사
+    IC,  //감탄사
+    JKS, //주격조사
+    JKC, //보격조사
+    JKG, //관형격조사
+    JKO, //목적격조사
+    JKB, //부사격조사
+    JKV, //호격조사
+    JKQ, //인용격조사
+    JX,  //보조사
+    JC,  //접속조사
+    EP,  //선어말어미
+    EF,  //종결어미
+    EC,  //연결어미
+    ETN, //명사형전성어미
+    ETM, //관형형전성어미
+    XPN, //체언접두사
+    XSN, //명사파생접미사
+    XSV, //동사파생접미사
+    XSA, //형용사파생접미사
+    XR,  //어근
+    SF,  //마침표, 물음표, 느낌표
+    SP,  //쉼표, 가운뎃점, 콜론, 빗금
+    SS,  //따옴표, 괄호표, 줄표
+    SE,  //줄임표
+    SO,  //붙임표(물결)
+    SW,  //기타 기호
+    SL,  //외국어
+    SH,  //한자
+    SN,  //숫자
+    NA,  //분석불능범주
+    NF,  //명사추정범주
+    NV,  //용언추정범주
 }
 
 /// Def:
@@ -43,7 +81,7 @@ fn is_hangul(syllable: char) -> bool {
 /// Note:
 ///     초성의 인덱스는 588(=중성의 개수*종성의 개수) 글자마다 바뀜.
 fn get_char_from_indices(cho_idx: usize, jung_idx: usize, jong_idx: usize) -> char {
-    let res: usize = ((cho_idx * NUM_VOWEL_CONSONANT * NUM_FINAL_CONSONANT)
+    let res: usize = ((cho_idx * NUM_MID_VOWEL * NUM_FINAL_CONSONANT)
         + (jung_idx * NUM_FINAL_CONSONANT)
         + jong_idx)
         + HANGUL_START;
@@ -59,11 +97,39 @@ fn get_char_from_indices(cho_idx: usize, jung_idx: usize, jong_idx: usize) -> ch
 fn get_indices_from_syllable(syllable: char) -> (usize, usize, usize) {
     let syllable_uni = syllable as usize - HANGUL_START;
 
-    let cho_idx = syllable_uni / (NUM_VOWEL_CONSONANT * NUM_FINAL_CONSONANT);
-    let jung_idx = (syllable_uni / NUM_FINAL_CONSONANT) % NUM_VOWEL_CONSONANT;
+    let cho_idx = syllable_uni / (NUM_MID_VOWEL * NUM_FINAL_CONSONANT);
+    let jung_idx = (syllable_uni / NUM_FINAL_CONSONANT) % NUM_MID_VOWEL;
     let jong_idx = syllable_uni % NUM_FINAL_CONSONANT;
 
     return (cho_idx, jung_idx, jong_idx);
+}
+
+/// Def:
+///     return true if the input syllable is in unicode scope of valid Hangul.
+/// Note:
+///     this function is valid only for the modern Korean chars.
+///
+pub fn is_hangul(syllable: char) -> bool {
+    let syllable_unicode = syllable as usize;
+
+    if syllable_unicode > HANGUL_END || syllable_unicode < HANGUL_START {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/// Def:
+///     한글 한 음절을 초성, 중성, 종성 문자로 분리해서 반환
+/// Note:
+///     종성이 없는 경우 종성 테이블의 0번 원소가 반환됨:= '\0'
+pub fn split_syllable(syllable: char) -> (char, char, char) {
+    if is_hangul(syllable) == false {
+        panic!("given syllable is NOT a Hangul.")
+    }
+
+    let (cho_idx, jung_idx, jong_idx) = get_indices_from_syllable(syllable);
+    return (CHO_SUNG[cho_idx], JUNG_SUNG[jung_idx], JONG_SUNG[jong_idx]);
 }
 
 #[cfg(test)]
@@ -133,5 +199,51 @@ mod test_korean_strings {
             get_char_from_indices(indices.0, indices.1, indices.2),
             test_char
         );
+    }
+
+    #[test]
+    fn test_split_syllable() {
+        // '가' => 'ㄱ', 'ㅏ', '\0'
+        let mut test_char = '가';
+        let (initial_consonant, mid_vowel, final_consonant) = split_syllable(test_char);
+        assert_eq!(initial_consonant, 'ㄱ');
+        assert_eq!(mid_vowel, 'ㅏ');
+        assert_eq!(final_consonant, '\0');
+
+        // '헿' => 'ㅎ', 'ㅔ', 'ㅎ'
+        test_char = '헿';
+        let (initial_consonant, mid_vowel, final_consonant) = split_syllable(test_char);
+        assert_eq!(initial_consonant, 'ㅎ');
+        assert_eq!(mid_vowel, 'ㅔ');
+        assert_eq!(final_consonant, 'ㅎ');
+
+        // '왕' => 'ㅇ', 'ㅘ', 'ㅇ'
+        test_char = '왕';
+        let (initial_consonant, mid_vowel, final_consonant) = split_syllable(test_char);
+        assert_eq!(initial_consonant, 'ㅇ');
+        assert_eq!(mid_vowel, 'ㅘ');
+        assert_eq!(final_consonant, 'ㅇ');
+
+        // '뚫' => 'ㄸ', 'ㅜ', 'ㅀ'
+        test_char = '뚫';
+        let (initial_consonant, mid_vowel, final_consonant) = split_syllable(test_char);
+        assert_eq!(initial_consonant, 'ㄸ');
+        assert_eq!(mid_vowel, 'ㅜ');
+        assert_eq!(final_consonant, 'ㅀ');
+    }
+    #[test]
+    #[should_panic]
+    fn test_split_syllable_goes_panic() {
+        // digit case
+        let mut test_char = '1';
+        split_syllable(test_char);
+
+        // english case
+        test_char = 'c';
+        split_syllable(test_char);
+
+        // special char case
+        test_char = '#';
+        split_syllable(test_char);
     }
 }
