@@ -67,21 +67,16 @@ pub fn make_morphemes_unique(file_path: &str) -> Result<Vec<Morpheme>, Error> {
 
 fn get_uniq_morphemes_from_value(document: &Vec<Value>) -> Vec<Morpheme> {
     let mut uniq_morph_form_label: HashSet<(String, String)> = HashSet::new();
-    let mut pb = tqdm!(total = 100);
+    let mut pb = tqdm!(total = document.len());
     let mut uniq_morphemes: Vec<Morpheme> = Vec::new();
     let json_null = vec![json!(null)];
 
     for doc in document {
         let sentences: &Vec<Value> = doc["sentence"].as_array().unwrap_or(&json_null);
-        if sentences.is_empty() | (sentences.len() == 0) {
-            continue;
-        }
 
         for sent in sentences {
             let morphemes: &Vec<Value> = sent["morpheme"].as_array().unwrap_or(&json_null);
-            if morphemes.is_empty() | (morphemes.len() == 0) {
-                continue;
-            }
+
             for morph in morphemes {
                 if morph.is_null() {
                     continue;
@@ -95,7 +90,7 @@ fn get_uniq_morphemes_from_value(document: &Vec<Value>) -> Vec<Morpheme> {
                 }
             }
         }
-        pb.update(1);
+        pb.update(1).unwrap();
     }
     return uniq_morphemes;
 }
