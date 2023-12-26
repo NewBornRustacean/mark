@@ -100,16 +100,16 @@ mod test_trie {
     fn test_insert_and_search() {
         let mut trie = Trie::new();
 
-        trie.insert("역삼", Some(PosTag::NNP));
+        trie.insert("역삼", Some(PosTag::NCN));
         assert_eq!(trie.total, 6);
 
-        trie.insert("역도", Some(PosTag::NNG));
+        trie.insert("역도", Some(PosTag::NCN));
         assert_eq!(trie.total, 8);
 
-        trie.insert("역무원", Some(PosTag::NNG));
+        trie.insert("역무원", Some(PosTag::NCN));
         assert_eq!(trie.total, 13);
 
-        trie.insert("역도산", Some(PosTag::NNP));
+        trie.insert("역도산", Some(PosTag::NCN));
         assert_eq!(trie.total, 16);
     }
 }
